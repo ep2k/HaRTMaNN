@@ -21,16 +21,16 @@ static const float INF = INT_MAX;
 int evaluate(Position parent_pos, int parent_value, Move move);
 
 // 探索部(反復深化)
-SearchResult search(Position pos, __int16 thinking_time);
+Result search(Position pos, __int16 thinking_time);
 
 // MTD(f)法
-SearchResult mtdf(Position node, int static_value, int f, int depth);
+Result mtdf(Position node, int static_value, int f, int depth);
 
 // Null-Window-Search(置換表使用)
-SearchResult null_window(Position node, int static_value, int alpha, unsigned __int8 depth, unsigned __int8 remain_depth);
+Result null_window(Position node, int static_value, int alpha, unsigned __int8 depth, unsigned __int8 remain_depth);
 
-// SearchResult型生成
-SearchResult search_result(int value, std::string move_follow = "");
+// Result型生成
+Result search_result(int value, std::string move_follow = "");
 
 // 局面と指し手の配列を受け取り、それらの評価値を並列処理でも求め、配列で返す
 std::vector<int> parallel_eval(Position pos, std::vector<Move> moves);
@@ -39,17 +39,36 @@ std::vector<int> parallel_eval(Position pos, std::vector<Move> moves);
 std::vector<unsigned __int8> index_sort(std::vector<int> v);
 
 // --------------------------------------
-//		探索関数 戻り値構造体
+//           探索結果クラス
 // --------------------------------------
 
-struct SearchResult {
+// これは最深ノードでインスタンス化する
+// それ以上のdepthでは、戻り値のmove_anticipateに指し手を追加、
+// またはexact_valueをfalseにして返す
 
-	int value;
-	std::string move_follow;
+class Result {
+
+private:
+	// 評価値 or 評価値の下限値
+	unsigned __int64 value;
+
+	// valueが「評価値」である
+	bool exact_value;
+
+	// 読み筋(exact_valueがTrue時のみ)
+	// 頭から時系列順の指し手となる
+	// 盤面の向きは1手ごと反転している
+	std::vector<Move>* move_anticipate;
+
+public:
+	Result(unsigned __int8 v, Move bottom_move);
+	~Result();
+	void add_move(Move move); // 読み筋の「末尾」に指し手を追加
+	void not_exact(); // 枝刈り時、move_anticipateを削除
 };
 
 // --------------------------------------
-//				置換表
+//               置換表
 // --------------------------------------
 
 // 置換表エントリ構造体
@@ -60,6 +79,6 @@ struct HashEntry {
 };
 
 // 置換表追加関数
-void table_new(unsigned __int64,__int8, int, std::string);
+void table_new(unsigned __int64, __int8, int, std::string);
 
 #endif // _SEARCH_H_

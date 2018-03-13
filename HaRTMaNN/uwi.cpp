@@ -107,7 +107,7 @@ void cui() {
 
 		if (first_is_com) {
 
-			SearchResult result = search(pos, thinking_time);
+			Result result = search(pos, thinking_time);
 			move = string_to_Move(result.move_follow);
 			cout << "•]‰¿’l:" << result.value << endl;
 		} 
@@ -132,7 +132,7 @@ void cui() {
 
 		if (second_is_com) {
 
-			SearchResult result = search(pos.reversed(), thinking_time);
+			Result result = search(pos.reversed(), thinking_time);
 			move = reversed_move(string_to_Move(result.move_follow));
 			cout << "•]‰¿’l:" << -result.value << endl;
 		}

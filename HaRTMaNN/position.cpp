@@ -6,7 +6,7 @@
 #include <algorithm>
 
 // ---------------------------------
-//			初期局面
+//            初期局面
 // ---------------------------------
 
 // 初期局面配列
@@ -19,7 +19,7 @@ const std::array<__int8, SQ_NUM> _INITIAL_POS_ARRAY = {
 const PosArray INITIAL_POS_ARRAY(_INITIAL_POS_ARRAY);
 
 // ----------------------------
-//		Position クラス
+//      Position クラス
 // ----------------------------
 
 Position::Position() { // 初期局面として設定する
@@ -223,7 +223,7 @@ bool Position::legal(Move m) {
 	}
 
 	return true;
-
+	
 }
 
 // traverable() と shootable() を同時に行う
@@ -288,7 +288,7 @@ __int8 Position::alone(enum turn turn = FRIEND) {
 }
 
 // ----------------------------
-//		Bitboard クラス
+//      Bitboard クラス
 // ----------------------------
 
 Bitboard::Bitboard(unsigned __int64 bitboard=0){
@@ -297,7 +297,7 @@ Bitboard::Bitboard(unsigned __int64 bitboard=0){
 
 // 1の数をカウントする
 __int8 Bitboard::count() {
-	// TODO
+	return __popcnt64(v);
 }
 
 // 1の位置を列挙し、動的配列で返すTODO
@@ -316,7 +316,7 @@ Bitboard Bitboard::reversed() {
 }
 
 // ----------------------------
-//		Bitboard系関数
+//      Bitboard系関数
 // ----------------------------
 
 // 指定した整数を持つBitboardを返す

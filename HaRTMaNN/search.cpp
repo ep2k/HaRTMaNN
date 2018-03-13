@@ -27,12 +27,12 @@
 #include <time.h>
 
 // ------------------------------------
-//		 メイン思考部(反復深化)
+//       メイン思考部(反復深化)
 // ------------------------------------
 
 // pos			: 現局面(エンジン側からの視点)
 // thinking_time: 思考時間[ミリ秒]
-SearchResult search(Position pos, __int16 thinking_time) {
+Result search(Position pos, __int16 thinking_time) {
 
 	int time_start = clock();
 
@@ -42,7 +42,7 @@ SearchResult search(Position pos, __int16 thinking_time) {
 
 	__int8 depth = 2;			// mtdfをするときの探索深さ
 	int f = root_static_value;	// mtdfでの評価値近似値 
-	SearchResult mtdf_result;	// mtdfの結果を格納
+	Result mtdf_result;	// mtdfの結果を格納
 
 	// 反復深化探索 (時間制限まで探索を深くし続ける)
 	while ((clock() - time_start) < thinking_time) {
@@ -58,16 +58,16 @@ SearchResult search(Position pos, __int16 thinking_time) {
 }
 
 // ------------------------------------
-//			  MTD(f)関数
+//            MTD(f)関数
 // ------------------------------------
 
 // node			: 探索開始ノード
 // static_value : 探索開始ノードの静的評価値
 // f			: ミニマックス値を見積もった値
 // depth		: 探索の深さ
-SearchResult mtdf(Position node, int static_value, int f, int depth) {
+Result mtdf(Position node, int static_value, int f, int depth) {
 
-	SearchResult g;		// NullWindowSearchの結果を格納する
+	Result g;		// NullWindowSearchの結果を格納する
 	int upper = +INF;	// g.valueの最大値
 	int lower = -INF;	// g.valueの最小値
 	int alpha;			// α = β = alpha としてαβを実行する(NullWindowSearch)
@@ -88,7 +88,7 @@ SearchResult mtdf(Position node, int static_value, int f, int depth) {
 }
 
 // ------------------------------------
-//	  Null-Window_Search(置換表使用)
+//   Null-Window_Search(置換表使用)
 // ------------------------------------
 
 // negaαβの探索窓の範囲を0にする
@@ -103,9 +103,9 @@ SearchResult mtdf(Position node, int static_value, int f, int depth) {
 // depth		: 探索開始ノードからの深さ
 // remain_depth	: 残りの探索の深さ
 
-SearchResult null_window(Position node, int static_value, int alpha, unsigned __int8 depth, unsigned __int8 remain_depth) {
+Result null_window(Position node, int static_value, int alpha, unsigned __int8 depth, unsigned __int8 remain_depth) {
 
-	SearchResult lower; // このノードの評価値の下限値+その時の指し手
+	Result lower; // このノードの評価値の下限値+その時の指し手
 	bool already_in_table = hash_table.find(node.hash) != hash_table.end(); // 置換表に含まれているか
 
 	// 置換表にその局面のエントリが含まれていれば利用する
@@ -137,7 +137,7 @@ SearchResult null_window(Position node, int static_value, int alpha, unsigned __
 	// 評価値最大のノードをそのまま返す
 	if (remain_depth == 1) {
 
-		SearchResult result = search_result(values[order[0]], Move_to_string(moves[order[0]]));
+		Result result = search_result(values[order[0]], Move_to_string(moves[order[0]]));
 
 		// 置換表に記録しておく
 		table_new(node.hash, 1, result.value, result.move_follow);
@@ -148,7 +148,7 @@ SearchResult null_window(Position node, int static_value, int alpha, unsigned __
 	// movesの中身をorder順に見ていく
 	for (int i = 0; i != moves.size(); ++i) {
 
-		SearchResult null_window_result = null_window(node.moved[moves[order[0]]], values[order[0]], -alpha, depth + 1, remain_depth - 1);
+		Result null_window_result = null_window(node.moved[moves[order[0]]], values[order[0]], -alpha, depth + 1, remain_depth - 1);
 
 		if (-null_window_result.value >= lower.value) {
 			lower = search_result(-null_window_result.value);
@@ -172,7 +172,35 @@ SearchResult null_window(Position node, int static_value, int alpha, unsigned __
 }
 
 // --------------------------------------
-//			置換表追加/更新関数
+//           探索結果クラス
+// --------------------------------------
+
+Result::Result(unsigned __int8 v, Move bottom_move) {
+
+	value = v;
+	exact_value = true;
+	move_anticipate = new std::vector<Move>{ bottom_move };
+}
+
+Result::~Result() {
+	delete move_anticipate;
+}
+
+// 読み筋の「末尾」に指し手を追加
+// TODO:exact_valueがfalseのときのエラー処理
+void Result::add_move(Move move) {
+	move_anticipate->push_back(move);
+}
+
+// 枝刈り時、move_anticipateを削除
+void Result::not_exact() {
+	exact_value = false;
+	delete move_anticipate;
+	move_anticipate = NULL;
+}
+
+// --------------------------------------
+//         置換表追加/更新関数
 // --------------------------------------
 
 void table_new(unsigned __int64 hash, __int8 remain_depth, int value, std::string move_follow = "") {
@@ -186,7 +214,7 @@ void table_new(unsigned __int64 hash, __int8 remain_depth, int value, std::strin
 }
 
 // --------------------------------------
-//		  評価関数並列処理関数
+//         評価関数並列処理関数
 // --------------------------------------
 
 // 局面と指し手の配列を受け取り、それらの評価値を並列処理でも求め、配列で返す
@@ -195,7 +223,7 @@ std::vector<int> parallel_eval(Position pos, std::vector<Move> moves) {
 }
 
 // --------------------------------------
-//		配列インデックスソート関数
+//      配列インデックスソート関数
 // --------------------------------------
 
 // int vectorを受け取り、要素の昇順にインデックスを並べ、vectorにする TODO
@@ -206,12 +234,12 @@ std::vector<unsigned __int8> index_sort(std::vector<int> v) {
 }
 
 // --------------------------------------
-//	NullWindowSearch結果構造体 生成関数
+//  NullWindowSearch結果構造体 生成関数
 // --------------------------------------
 
-SearchResult search_result(int value, std::string move_follow = "") {
+Result search_result(int value, std::string move_follow = "") {
 
-	SearchResult tmp;
+	Result tmp;
 	tmp.value = value;
 	tmp.move_follow = move_follow;
 
