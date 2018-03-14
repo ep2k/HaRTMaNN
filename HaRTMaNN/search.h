@@ -13,6 +13,9 @@ std::unordered_map<__int64, HashEntry> hash_table;
 // INT_MAX(2,147,483,647)を無限大として扱う
 static const float INF = INT_MAX;
 
+// 意味のない指し手型
+Move NULL_MOVE;
+
 // 評価関数 (evaluate.cppで実装)
 
 // parent_pos	: 親局面
@@ -28,9 +31,6 @@ Result mtdf(Position node, int static_value, int f, int depth);
 
 // Null-Window-Search(置換表使用)
 Result null_window(Position node, int static_value, int alpha, unsigned __int8 depth, unsigned __int8 remain_depth);
-
-// Result型生成
-Result search_result(int value, std::string move_follow = "");
 
 // 局面と指し手の配列を受け取り、それらの評価値を並列処理でも求め、配列で返す
 std::vector<int> parallel_eval(Position pos, std::vector<Move> moves);
@@ -48,19 +48,18 @@ std::vector<unsigned __int8> index_sort(std::vector<int> v);
 
 class Result {
 
-private:
+public:
 	// 評価値 or 評価値の下限値
-	unsigned __int64 value;
+	int value;
 
 	// valueが「評価値」である
 	bool exact_value;
 
 	// 読み筋(exact_valueがTrue時のみ)
-	// 頭から時系列順の指し手となる
+	// 末尾から時系列順の指し手となる
 	// 盤面の向きは1手ごと反転している
 	std::vector<Move>* move_anticipate;
 
-public:
 	Result(unsigned __int8 v, Move bottom_move);
 	~Result();
 	void add_move(Move move); // 読み筋の「末尾」に指し手を追加
@@ -68,14 +67,20 @@ public:
 };
 
 // --------------------------------------
-//               置換表
+//           置換表エントリ
 // --------------------------------------
 
-// 置換表エントリ構造体
-struct HashEntry {
-	int value;				// MTD(f)で得た局面の評価値
-	std::string move_follow;// それ以降に続く指し手(""ならば、valueは下限値を表す)
-	__int8 remain_depth;	// αβ探索を行った際の残り深さ
+// 置換表エントリクラス
+class HashEntry {
+public:
+	__int8 remain_depth;// αβ探索を行った際の残り深さ
+	int value;// MTD(f)で得た局面の評価値
+	bool exact_value;// value が実際の評価値である
+	Move* bestmove; // 前回の最善手(exact_value時のみ)
+
+	~HashEntry();
+	void set_bestmove(Move move);
+	void not_exact();
 };
 
 // 置換表追加関数

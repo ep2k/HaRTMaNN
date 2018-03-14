@@ -392,7 +392,7 @@ PosArray PosArray::moved(Move m) {
 }
 
 // ----------------------------
-//		Move 構造体
+//       Move 構造体
 // ----------------------------
 
 // 指し手型作成用関数
@@ -405,35 +405,8 @@ Move move(__int8 from, __int8 to, enum move_kind kind) {
 	return obj;
 }
 
-// 指し手 → 文字列 変換関数
-std::string Move_to_string(Move m) {
-
-	std::string str = "/";
-
-	if (m.from < 10) str += "0";
-	str += std::to_string(m.from);
-
-	if (m.to < 10) str += "0";
-	str += std::to_string(m.to);
-
-	if (m.kind == SHOOT) str += "S";
-	else str += "T";
-
-	return str;
-}
-
-// 文字列 → 指し手 変換関数
-Move string_to_Move(std::string str) {
-
-	Move move;
-
-	std::string move_str = str.substr(str.rfind("/")); // TEST
-
-	move.from = std::stoi(move_str.substr(1, 2));
-	move.to = std::stoi(move_str.substr(3, 2));
-
-	if (move_str[-1] == 'T') move.kind = TRAVEL;
-	else move.kind = SHOOT;
-
-	return move;
+// 指し手を相手側から見たものにする
+void Move::reversed() {
+	from = SQ_NUM - from;
+	to = SQ_NUM - to;
 }

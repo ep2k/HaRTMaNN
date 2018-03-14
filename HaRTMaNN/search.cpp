@@ -26,34 +26,34 @@
 #include <string>
 #include <time.h>
 
+void info(); // 探索情報をGUIに送る
+
 // ------------------------------------
 //       メイン思考部(反復深化)
 // ------------------------------------
 
-// pos			: 現局面(エンジン側からの視点)
-// thinking_time: 思考時間[ミリ秒]
-Result search(Position pos, __int16 thinking_time) {
+// pos   : 現局面(エンジン側からの視点)
+// ttime : 思考時間[ミリ秒]
+Result search(Position pos, __int16 ttime) {
 
 	int time_start = clock();
 
 	// 現在の静的評価値を計算しておく
-	// これはMTD(f)のfとして使ったり、差分計算で利用したりする
+	// これは1回目のMTD(f)のfとして使ったり、差分計算で利用したりする
 	int root_static_value = evaluate(pos); // CHECK
 
-	__int8 depth = 2;			// mtdfをするときの探索深さ
-	int f = root_static_value;	// mtdfでの評価値近似値 
-	Result mtdf_result;	// mtdfの結果を格納
+	unsigned __int8 depth = 2; // mtdfをするときの探索深さ
+	int f = root_static_value; // mtdfでの評価値近似値
+	Result mtdf_result;        // 探索結果を格納しておく
 
 	// 反復深化探索 (時間制限まで探索を深くし続ける)
-	while ((clock() - time_start) < thinking_time) {
-
+	while ((clock() - time_start) < ttime) {
+		
 		mtdf_result = mtdf(pos, root_static_value, f, depth);
 
 		f = mtdf_result.value; // 次回のfをミニマックス値にする
 		depth += 2;
 	}
-	std::cout << "depth: " << depth << std::endl;
-	std::cout << "thinking_time: " << clock() - time_start << "ms" << std::endl;
 	return mtdf_result;
 }
 
@@ -175,8 +175,7 @@ Result null_window(Position node, int static_value, int alpha, unsigned __int8 d
 //           探索結果クラス
 // --------------------------------------
 
-Result::Result(unsigned __int8 v, Move bottom_move) {
-
+Result::Result(unsigned __int8 v=0, Move bottom_move = NULL_MOVE) {
 	value = v;
 	exact_value = true;
 	move_anticipate = new std::vector<Move>{ bottom_move };
@@ -200,17 +199,42 @@ void Result::not_exact() {
 }
 
 // --------------------------------------
+//            置換表クラス
+// --------------------------------------
+
+HashEntry::~HashEntry() {
+	delete bestmove;
+}
+
+void HashEntry::set_bestmove(Move move) {
+
+	if (bestmove == NULL) bestmove = new Move;
+	*bestmove = move;
+}
+
+void HashEntry::not_exact() {
+	exact_value = false;
+	delete bestmove;
+	bestmove = NULL;
+}
+
+
+// --------------------------------------
 //         置換表追加/更新関数
 // --------------------------------------
 
-void table_new(unsigned __int64 hash, __int8 remain_depth, int value, std::string move_follow = "") {
+void table_new(unsigned __int64 hash, __int8 remain_depth, int value,bool exact_value, Move bestmove = NULL_MOVE) {
 
-	HashEntry new_hash_entry;
-	new_hash_entry.value = value;
-	new_hash_entry.move_follow = move_follow;
-	new_hash_entry.remain_depth = remain_depth;
+	HashEntry new_entry;
+	new_entry.remain_depth = remain_depth;
+	new_entry.value = value;
 
-	hash_table[hash] = new_hash_entry; // 新しいハッシュエントリの追加/更新
+	if (exact_value) {
+		new_entry.bestmove = new Move;
+		*new_entry.bestmove = bestmove;
+	}
+	new_entry.exact_value = exact_value;
+	hash_table[hash] = new_entry; // 新しいハッシュエントリの追加/更新
 }
 
 // --------------------------------------
@@ -231,17 +255,4 @@ std::vector<unsigned __int8> index_sort(std::vector<int> v) {
 
 	// TODO
 
-}
-
-// --------------------------------------
-//  NullWindowSearch結果構造体 生成関数
-// --------------------------------------
-
-Result search_result(int value, std::string move_follow = "") {
-
-	Result tmp;
-	tmp.value = value;
-	tmp.move_follow = move_follow;
-
-	return tmp;
 }

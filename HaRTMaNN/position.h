@@ -269,16 +269,11 @@ struct Move {
 	__int8 from;
 	__int8 to;
 	enum move_kind kind;
+	void reversed(); // 指し手を相手側から見たものにする
 };
 
 // 指し手型作成用関数
 // 引数に入れた値から指し手型のオブジェクトを作り、返す
 Move move(__int8 from, __int8 to, enum move_kind kind);
-
-// 指し手を文字列で表現する
-std::string Move_to_string(Move m);
-
-// 文字列で表現された指し手/これからの指し手一覧を指し手型にする
-Move string_to_Move(std::string str);
 
 #endif //_POSITION_H_

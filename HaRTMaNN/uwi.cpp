@@ -10,6 +10,8 @@
 
 using namespace std;
 
+bool cui_mode;
+
 // --------------------
 //		未完成
 // --------------------
@@ -45,26 +47,19 @@ void usi(){
 	}
 
 }
-
-// 探索情報を送る
-void info(){}
 */
+// 探索情報を送る
+void info(unsigned int nps,unsigned __int16 depth){
 
-// 局面をコンソールに描画する
+	if (cui_mode == true) return;
+	
+	// TODO
+}
+
+// 局面をコンソールに描画する(CUI用)
 void draw(Position pos) {
 	// TODO
 	
-}
-
-// Move型を反転させる
-Move reversed_move(Move move) {
-
-	Move reversed;
-	
-	reversed.from = SQ_NUM - move.from;
-	reversed.to = SQ_NUM - move.to;
-
-	return reversed;
 }
 
 // やっつけで作ったCUIモードです
