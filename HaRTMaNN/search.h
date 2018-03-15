@@ -18,9 +18,9 @@ Move NULL_MOVE;
 
 // 評価関数 (evaluate.cppで実装)
 
-// parent_pos	: 親局面
-// value		: 親静的評価値（ルートノード時は省略）
-// move			: 指し手（ルートノード時は省略）
+// parent_pos : 親局面
+// value      : 親静的評価値（ルートノード時は省略）
+// move	      : 指し手（ルートノード時は省略）
 int evaluate(Position parent_pos, int parent_value, Move move);
 
 // 探索部(反復深化)
@@ -63,7 +63,7 @@ public:
 	Result(unsigned __int8 v, Move bottom_move);
 	~Result();
 	void add_move(Move move); // 読み筋の「末尾」に指し手を追加
-	void not_exact(); // 枝刈り時、move_anticipateを削除
+	void not_exact();         // 枝刈り時、move_anticipateを削除
 };
 
 // --------------------------------------
@@ -73,10 +73,10 @@ public:
 // 置換表エントリクラス
 class HashEntry {
 public:
-	__int8 remain_depth;// αβ探索を行った際の残り深さ
-	int value;// MTD(f)で得た局面の評価値
-	bool exact_value;// value が実際の評価値である
-	Move* bestmove; // 前回の最善手(exact_value時のみ)
+	__int8 remain_depth; // αβ探索を行った際の残り深さ
+	int value;           // MTD(f)で得た局面の評価値
+	bool exact_value;    // value が実際の評価値である
+	Move* bestmove;      // 前回の最善手(exact_value時のみ)
 
 	~HashEntry();
 	void set_bestmove(Move move);

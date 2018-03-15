@@ -61,18 +61,18 @@ Result search(Position pos, __int16 ttime) {
 //            MTD(f)関数
 // ------------------------------------
 
-// node			: 探索開始ノード
+// node         : 探索開始ノード
 // static_value : 探索開始ノードの静的評価値
-// f			: ミニマックス値を見積もった値
-// depth		: 探索の深さ
+// f            : ミニマックス値を見積もった値
+// depth        : 探索の深さ
 Result mtdf(Position node, int static_value, int f, int depth) {
 
-	Result g;		// NullWindowSearchの結果を格納する
-	int upper = +INF;	// g.valueの最大値
-	int lower = -INF;	// g.valueの最小値
-	int alpha;			// α = β = alpha としてαβを実行する(NullWindowSearch)
+	Result g;         // NullWindowSearchの結果を格納する
+	int upper = +INF; // g.valueの最大値
+	int lower = -INF; // g.valueの最小値
+	int alpha;        // α = β = alpha としてαβを実行する(NullWindowSearch)
 
-	g.value = f;		// fは何らかの方法でミニマックス値を見積もった値
+	g.value = f;      // fは何らかの方法でミニマックス値を見積もった値
 
 	while (lower < upper) {
 		if (g.value == lower) alpha = g.value + 1; // 前回探索開始ノードでカットされなかった
@@ -81,8 +81,8 @@ Result mtdf(Position node, int static_value, int f, int depth) {
 		// 置換表付きαβ法で NullWindowSearch を行う
 		g = null_window(node, static_value, alpha, 1, depth);
 
-		if (g.value == alpha) lower = g.value;		// 最浅ノードでカットされていない
-		else if (g.value > alpha) upper = g.value;	// カットされた
+		if (g.value == alpha) lower = g.value;     // 最浅ノードでカットされていない
+		else if (g.value > alpha) upper = g.value; // カットされた
 	}
 	return g;
 }
@@ -97,11 +97,11 @@ Result mtdf(Position node, int static_value, int f, int depth) {
 // 最善手が確定したときは、
 // "/0017T/2117T/0327S"のように、先の手から記述していく
 
-// node			: 現在のノード
+// node         : 現在のノード
 // static_value : 現ノードの静的評価値（評価関数をそのまま使用した評価値）
-// alpha		: 探索窓(betaも兼ねる)
-// depth		: 探索開始ノードからの深さ
-// remain_depth	: 残りの探索の深さ
+// alpha        : 探索窓(betaも兼ねる)
+// depth        : 探索開始ノードからの深さ
+// remain_depth : 残りの探索の深さ
 
 Result null_window(Position node, int static_value, int alpha, unsigned __int8 depth, unsigned __int8 remain_depth) {
 
@@ -158,7 +158,7 @@ Result null_window(Position node, int static_value, int alpha, unsigned __int8 d
 				table_new(node.hash, remain_depth, lower.value); // lower.value を下限値として置換表に登録
 
 				if (depth == 1) return search_result(lower.value); // 最も浅いノードの場合、alphaを超えた値を返す
-				else return search_result(INF);					 // そうでなければ通常のカット
+				else return search_result(INF);                    // そうでなければ通常のカット
 			}
 		}
 	}
