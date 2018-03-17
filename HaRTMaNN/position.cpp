@@ -32,9 +32,7 @@ Position::Position() { // 初期局面として設定する
 
 	parray = INITIAL_POS_ARRAY;
 
-	hash = 0xd28f75d1fdec47B8; // TODO
-
-	is_first = true;
+	hash = 0xd28f75d1fdec47B8; // TODO 初期ハッシュの計算
 }
 
 // 指し手を受け取り、自身の値を変える
@@ -56,6 +54,7 @@ void Position::move(Move m) {
 		occupied[BOTH].v ^= (1 << m.from) | (1 << m.to);
 
 		// -- ハッシュ値の更新 -------
+
 		if (is_first) {
 			hash -= RAND_P_SQ[p_from][m.from];
 			hash += RAND_P_SQ[p_from][m.to];
